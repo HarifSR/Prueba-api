@@ -59,6 +59,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  */
 
 
+
 // =================== PRODUCTOS ===================
 
 /**
@@ -76,17 +77,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *               type: array
  *               items:
  *                 type: object
- *                 properties:
- *                   ProductoID:
- *                     type: string
- *                   Nombre:
- *                     type: string
- *                   Descripcion:
- *                     type: string
- *                   Precio:
- *                     type: number
- *                   CategoriaID:
- *                     type: integer
  *   post:
  *     summary: Crea un nuevo producto
  *     tags: [Productos]
@@ -96,28 +86,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               ProductoID:
- *                 type: string
- *               Nombre:
- *                 type: string
- *               Descripcion:
- *                 type: string
- *               Precio:
- *                 type: number
- *               CategoriaID:
- *                 type: integer
  *             example:
  *               ProductoID: "P123"
- *               Nombre: "Nuevo Producto desde Swagger"
- *               Descripcion: "Ejemplo de descripción"
+ *               Nombre: "Nuevo Producto"
+ *               Descripcion: "Descripción de ejemplo"
  *               Precio: 19.99
  *               CategoriaID: 1
  *     responses:
  *       '201':
  *         description: Producto creado exitosamente
- *       '400':
- *         description: Datos de entrada inválidos
  */
 app.get('/productos', async (req, res) => {
   try {
@@ -125,18 +102,15 @@ app.get('/productos', async (req, res) => {
     let result = await pool.request().query('SELECT * FROM dbo.Productos');
     res.status(200).json(result.recordset);
   } catch (err) {
-    console.error(err);
     res.status(500).send({ mensaje: 'Error al obtener los productos', error: err });
   }
 });
 
 app.post('/productos', async (req, res) => {
   const { ProductoID, Nombre, Descripcion, Precio, CategoriaID } = req.body;
-
   if (!ProductoID || !Nombre || !Precio) {
     return res.status(400).json({ mensaje: 'ProductoID, Nombre y Precio son campos requeridos.' });
   }
-
   try {
     let pool = await sql.connect(dbConfig);
     await pool.request()
@@ -146,14 +120,11 @@ app.post('/productos', async (req, res) => {
       .input('Precio', sql.Decimal(18, 2), Precio)
       .input('CategoriaID', sql.Int, CategoriaID)
       .query('INSERT INTO dbo.Productos (ProductoID, Nombre, Descripcion, Precio, CategoriaID) VALUES (@ProductoID, @Nombre, @Descripcion, @Precio, @CategoriaID)');
-
     res.status(201).json({ ProductoID, Nombre, Descripcion, Precio, CategoriaID });
   } catch (err) {
-    console.error(err);
     res.status(500).send({ mensaje: 'Error al guardar el producto', error: err });
   }
 });
-
 
 // =================== VEHÍCULOS ===================
 
@@ -166,22 +137,7 @@ app.post('/productos', async (req, res) => {
  *     responses:
  *       '200':
  *         description: Lista de vehículos obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   VehiculoID:
- *                     type: string
- *                   Marca:
- *                     type: string
- *                   Modelo:
- *                     type: string
- *                   Anio:
- *                     type: integer
-*   post:
+ *   post:
  *     summary: Crea un nuevo vehículo
  *     tags: [Vehículos]
  *     requestBody:
@@ -190,13 +146,6 @@ app.post('/productos', async (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               modelo:
- *                 type: string
- *               marca:
- *                 type: string
- *               linea:
- *                 type: string
  *             example:
  *               modelo: "Corolla"
  *               marca: "Toyota"
@@ -204,8 +153,6 @@ app.post('/productos', async (req, res) => {
  *     responses:
  *       '201':
  *         description: Vehículo creado exitosamente
- *       '400':
- *         description: Datos de entrada inválidos
  */
 app.get('/vehiculos', async (req, res) => {
   try {
@@ -213,18 +160,15 @@ app.get('/vehiculos', async (req, res) => {
     let result = await pool.request().query('SELECT * FROM dbo.Vehiculos');
     res.status(200).json(result.recordset);
   } catch (err) {
-    console.error(err);
     res.status(500).send({ mensaje: 'Error al obtener los vehículos', error: err });
   }
 });
 
 app.post('/vehiculos', async (req, res) => {
   const { modelo, marca, linea } = req.body;
-
   if (!modelo || !marca || !linea) {
     return res.status(400).json({ mensaje: 'modelo, marca y linea son campos requeridos.' });
   }
-
   try {
     let pool = await sql.connect(dbConfig);
     let result = await pool.request()
@@ -232,10 +176,8 @@ app.post('/vehiculos', async (req, res) => {
       .input('marca', sql.NVarChar, marca)
       .input('linea', sql.NVarChar, linea)
       .query('INSERT INTO dbo.Vehiculos (modelo, marca, linea) VALUES (@modelo, @marca, @linea); SELECT SCOPE_IDENTITY() AS id;');
-
     res.status(201).json({ id: result.recordset[0].id, modelo, marca, linea });
   } catch (err) {
-    console.error(err);
     res.status(500).send({ mensaje: 'Error al guardar el vehículo', error: err });
   }
 });
@@ -251,26 +193,6 @@ app.post('/vehiculos', async (req, res) => {
  *     responses:
  *       '200':
  *         description: Lista de funciones obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   titulo:
- *                     type: string
- *                   descripcion:
- *                     type: string
- *                   fecha:
- *                     type: string
- *                     format: date
- *                   hora:
- *                     type: string
- *                   sala:
- *                     type: string
  *   post:
  *     summary: Crea una nueva función en la cartelera
  *     tags: [Cartelera]
@@ -280,18 +202,6 @@ app.post('/vehiculos', async (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               titulo:
- *                 type: string
- *               descripcion:
- *                 type: string
- *               fecha:
- *                 type: string
- *                 format: date
- *               hora:
- *                 type: string
- *               sala:
- *                 type: string
  *             example:
  *               titulo: "Avengers: Endgame"
  *               descripcion: "Película de superhéroes de Marvel"
@@ -301,8 +211,6 @@ app.post('/vehiculos', async (req, res) => {
  *     responses:
  *       '201':
  *         description: Función creada exitosamente
- *       '400':
- *         description: Datos de entrada inválidos
  */
 app.get('/cartelera3562', async (req, res) => {
   try {
@@ -310,18 +218,15 @@ app.get('/cartelera3562', async (req, res) => {
     let result = await pool.request().query('SELECT * FROM dbo.cartelera3562');
     res.status(200).json(result.recordset);
   } catch (err) {
-    console.error(err);
     res.status(500).send({ mensaje: 'Error al obtener la cartelera', error: err });
   }
 });
 
 app.post('/cartelera3562', async (req, res) => {
   const { titulo, descripcion, fecha, hora, sala } = req.body;
-
   if (!titulo || !fecha || !hora || !sala) {
     return res.status(400).json({ mensaje: 'titulo, fecha, hora y sala son campos requeridos.' });
   }
-
   try {
     let pool = await sql.connect(dbConfig);
     let result = await pool.request()
@@ -331,14 +236,11 @@ app.post('/cartelera3562', async (req, res) => {
       .input('hora', sql.NVarChar, hora)
       .input('sala', sql.NVarChar, sala)
       .query('INSERT INTO dbo.cartelera3562 (titulo, descripcion, fecha, hora, sala) VALUES (@titulo, @descripcion, @fecha, @hora, @sala); SELECT SCOPE_IDENTITY() AS id;');
-
     res.status(201).json({ id: result.recordset[0].id, titulo, descripcion, fecha, hora, sala });
   } catch (err) {
-    console.error(err);
     res.status(500).send({ mensaje: 'Error al guardar en la cartelera', error: err });
   }
 });
-
 
 // =================== SERVIDOR ===================
 
