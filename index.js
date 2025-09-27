@@ -240,6 +240,105 @@ app.post('/vehiculos', async (req, res) => {
   }
 });
 
+// =================== CARTELERA ===================
+
+/**
+ * @swagger
+ * /cartelera3562:
+ *   get:
+ *     summary: Retorna una lista de todas las funciones en cartelera
+ *     tags: [Cartelera]
+ *     responses:
+ *       '200':
+ *         description: Lista de funciones obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   titulo:
+ *                     type: string
+ *                   descripcion:
+ *                     type: string
+ *                   fecha:
+ *                     type: string
+ *                     format: date
+ *                   hora:
+ *                     type: string
+ *                   sala:
+ *                     type: string
+ *   post:
+ *     summary: Crea una nueva función en la cartelera
+ *     tags: [Cartelera]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               titulo:
+ *                 type: string
+ *               descripcion:
+ *                 type: string
+ *               fecha:
+ *                 type: string
+ *                 format: date
+ *               hora:
+ *                 type: string
+ *               sala:
+ *                 type: string
+ *             example:
+ *               titulo: "Avengers: Endgame"
+ *               descripcion: "Película de superhéroes de Marvel"
+ *               fecha: "2025-09-30"
+ *               hora: "18:30"
+ *               sala: "Sala 1"
+ *     responses:
+ *       '201':
+ *         description: Función creada exitosamente
+ *       '400':
+ *         description: Datos de entrada inválidos
+ */
+app.get('/cartelera3562', async (req, res) => {
+  try {
+    let pool = await sql.connect(dbConfig);
+    let result = await pool.request().query('SELECT * FROM dbo.cartelera3562');
+    res.status(200).json(result.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ mensaje: 'Error al obtener la cartelera', error: err });
+  }
+});
+
+app.post('/cartelera3562', async (req, res) => {
+  const { titulo, descripcion, fecha, hora, sala } = req.body;
+
+  if (!titulo || !fecha || !hora || !sala) {
+    return res.status(400).json({ mensaje: 'titulo, fecha, hora y sala son campos requeridos.' });
+  }
+
+  try {
+    let pool = await sql.connect(dbConfig);
+    let result = await pool.request()
+      .input('titulo', sql.NVarChar, titulo)
+      .input('descripcion', sql.NVarChar, descripcion)
+      .input('fecha', sql.Date, fecha)
+      .input('hora', sql.NVarChar, hora)
+      .input('sala', sql.NVarChar, sala)
+      .query('INSERT INTO dbo.cartelera3562 (titulo, descripcion, fecha, hora, sala) VALUES (@titulo, @descripcion, @fecha, @hora, @sala); SELECT SCOPE_IDENTITY() AS id;');
+
+    res.status(201).json({ id: result.recordset[0].id, titulo, descripcion, fecha, hora, sala });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ mensaje: 'Error al guardar en la cartelera', error: err });
+  }
+});
+
 
 // =================== SERVIDOR ===================
 
