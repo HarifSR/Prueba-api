@@ -179,6 +179,34 @@ app.post('/productos', async (req, res) => {
  *                     type: string
  *                   Anio:
  *                     type: integer
+ *   post:
+ *     summary: Crea un nuevo vehículo
+ *     tags: [Vehículos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               VehiculoID:
+ *                 type: string
+ *               Marca:
+ *                 type: string
+ *               Modelo:
+ *                 type: string
+ *               Anio:
+ *                 type: integer
+ *             example:
+ *               VehiculoID: "V001"
+ *               Marca: "Toyota"
+ *               Modelo: "Corolla"
+ *               Anio: 2022
+ *     responses:
+ *       '201':
+ *         description: Vehículo creado exitosamente
+ *       '400':
+ *         description: Datos de entrada inválidos
  */
 app.get('/vehiculos', async (req, res) => {
   try {
@@ -190,6 +218,30 @@ app.get('/vehiculos', async (req, res) => {
     res.status(500).send({ mensaje: 'Error al obtener los vehículos', error: err });
   }
 });
+
+app.post('/vehiculos', async (req, res) => {
+  const { VehiculoID, Marca, Modelo, Anio } = req.body;
+
+  if (!VehiculoID || !Marca || !Modelo || !Anio) {
+    return res.status(400).json({ mensaje: 'VehiculoID, Marca, Modelo y Anio son campos requeridos.' });
+  }
+
+  try {
+    let pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input('VehiculoID', sql.VarChar, VehiculoID)
+      .input('Marca', sql.NVarChar, Marca)
+      .input('Modelo', sql.NVarChar, Modelo)
+      .input('Anio', sql.Int, Anio)
+      .query('INSERT INTO dbo.Vehiculos (VehiculoID, Marca, Modelo, Anio) VALUES (@VehiculoID, @Marca, @Modelo, @Anio)');
+
+    res.status(201).json({ VehiculoID, Marca, Modelo, Anio });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ mensaje: 'Error al guardar el vehículo', error: err });
+  }
+});
+
 
 
 // =================== SERVIDOR ===================
