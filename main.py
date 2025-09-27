@@ -1,15 +1,19 @@
 from flask import Flask, jsonify, request
 import pyodbc
 from flasgger import Swagger # <--- 1. IMPORTAR SWAGGER
+import os
 
 app = Flask(__name__)
 swagger = Swagger(app) # <--- 2. INICIALIZAR SWAGGER
 
+
+
 # --- Configuración de la conexión a la base de datos ---
-server = 'svr-sql-ctezo.southcentralus.cloudapp.azure.com'
-database = 'db_DesaWebDevUMG'
-username = 'usr_DesaWebDevUMG'
-password = '!ngGuast@360'
+# Lee las variables de entorno configuradas en Azure
+server = os.environ.get('DB_SERVER')
+database = os.environ.get('DB_DATABASE')
+username = os.environ.get('DB_USERNAME')
+password = os.environ.get('DB_PASSWORD')
 connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
 
 
