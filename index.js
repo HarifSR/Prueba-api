@@ -35,7 +35,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:4000',
+        url: 'https://prueba-api-zd2m.onrender.com',
         description: 'Servidor de Desarrollo'
       }
     ]
