@@ -179,7 +179,7 @@ app.post('/productos', async (req, res) => {
  *                     type: string
  *                   Anio:
  *                     type: integer
- *   post:
+*   post:
  *     summary: Crea un nuevo vehículo
  *     tags: [Vehículos]
  *     requestBody:
@@ -189,19 +189,16 @@ app.post('/productos', async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               VehiculoID:
+ *               modelo:
  *                 type: string
- *               Marca:
+ *               marca:
  *                 type: string
- *               Modelo:
+ *               linea:
  *                 type: string
- *               Anio:
- *                 type: integer
  *             example:
- *               VehiculoID: "V001"
- *               Marca: "Toyota"
- *               Modelo: "Corolla"
- *               Anio: 2022
+ *               modelo: "Corolla"
+ *               marca: "Toyota"
+ *               linea: "Sedán"
  *     responses:
  *       '201':
  *         description: Vehículo creado exitosamente
@@ -220,28 +217,26 @@ app.get('/vehiculos', async (req, res) => {
 });
 
 app.post('/vehiculos', async (req, res) => {
-  const { VehiculoID, Marca, Modelo, Anio } = req.body;
+  const { modelo, marca, linea } = req.body;
 
-  if (!VehiculoID || !Marca || !Modelo || !Anio) {
-    return res.status(400).json({ mensaje: 'VehiculoID, Marca, Modelo y Anio son campos requeridos.' });
+  if (!modelo || !marca || !linea) {
+    return res.status(400).json({ mensaje: 'modelo, marca y linea son campos requeridos.' });
   }
 
   try {
     let pool = await sql.connect(dbConfig);
-    await pool.request()
-      .input('VehiculoID', sql.VarChar, VehiculoID)
-      .input('Marca', sql.NVarChar, Marca)
-      .input('Modelo', sql.NVarChar, Modelo)
-      .input('Anio', sql.Int, Anio)
-      .query('INSERT INTO dbo.Vehiculos (VehiculoID, Marca, Modelo, Anio) VALUES (@VehiculoID, @Marca, @Modelo, @Anio)');
+    let result = await pool.request()
+      .input('modelo', sql.NVarChar, modelo)
+      .input('marca', sql.NVarChar, marca)
+      .input('linea', sql.NVarChar, linea)
+      .query('INSERT INTO dbo.Vehiculos (modelo, marca, linea) VALUES (@modelo, @marca, @linea); SELECT SCOPE_IDENTITY() AS id;');
 
-    res.status(201).json({ VehiculoID, Marca, Modelo, Anio });
+    res.status(201).json({ id: result.recordset[0].id, modelo, marca, linea });
   } catch (err) {
     console.error(err);
     res.status(500).send({ mensaje: 'Error al guardar el vehículo', error: err });
   }
 });
-
 
 
 // =================== SERVIDOR ===================
