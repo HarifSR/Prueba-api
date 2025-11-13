@@ -53,7 +53,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  * @swagger
  * tags:
  *   - name: Productos
- *     description: Endpoints para gestionar productos
+ *     description: Endpoints para gestionar productos prueba de cambios
  *   - name: Vehículos
  *     description: Endpoints para gestionar vehículos
  */
