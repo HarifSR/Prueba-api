@@ -29,9 +29,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API de Productos y Vehículos',
+      title: 'API de Productos, Vehículos y Chat',
       version: '1.0.0',
-      description: 'Una API simple para gestionar productos y vehículos, documentada con Swagger.'
+      description: 'Una API simple para gestionar productos, vehículos y mensajes de chat, documentada con Swagger.'
     },
     servers: [
       {
@@ -56,9 +56,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *     description: Endpoints para gestionar productos prueba de cambios
  *   - name: Vehículos
  *     description: Endpoints para gestionar vehículos
+ *   - name: Mensajes
+ *     description: Endpoints para visualizar mensajes del chat (tabla Chat_Mensaje)
  */
-
-
 
 // =================== PRODUCTOS ===================
 
@@ -236,9 +236,42 @@ app.post('/cartelera3562', async (req, res) => {
       .input('hora', sql.NVarChar, hora)
       .input('sala', sql.NVarChar, sala)
       .query('INSERT INTO dbo.cartelera3562 (titulo, descripcion, fecha, hora, sala) VALUES (@titulo, @descripcion, @fecha, @hora, @sala); SELECT SCOPE_IDENTITY() AS id;');
-    res.status(201).json({ id: result.recordset[0].id, titulo, descripcion, fecha, hora, sala });
+  res.status(201).json({ id: result.recordset[0].id, titulo, descripcion, fecha, hora, sala });
   } catch (err) {
     res.status(500).send({ mensaje: 'Error al guardar en la cartelera', error: err });
+  }
+});
+
+// =================== CHAT_MENSAJE ===================
+
+/**
+ * @swagger
+ * /chat-mensajes:
+ *   get:
+ *     summary: Retorna una lista de mensajes del chat (tabla Chat_Mensaje) en orden cronológico
+ *     tags: [Mensajes]
+ *     responses:
+ *       '200':
+ *         description: Lista de mensajes obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
+app.get('/chat-mensajes', async (req, res) => {
+  try {
+    let pool = await sql.connect(dbConfig);
+    // Ordenados por fecha (ajusta ASC/DESC según quieras más recientes al final o al inicio)
+    let result = await pool.request().query(`
+      SELECT ID_Mensaje, Cod_Sala, Login_Emisor, Contenido, Fecha_Envio, Estado
+      FROM dbo.Chat_Mensaje
+      ORDER BY Fecha_Envio ASC
+    `);
+    res.status(200).json(result.recordset);
+  } catch (err) {
+    res.status(500).send({ mensaje: 'Error al obtener los mensajes del chat', error: err });
   }
 });
 
